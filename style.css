@@ -1,0 +1,55 @@
+* {
+  padding: 0;
+  margin: 0;
+}
+
+body
+{
+    height: 100vh;
+    font-family: 'Exo 2', sans-serif;
+}
+
+.webgl
+{
+    position: fixed;
+    top: 0;
+    left: 0;
+    outline: none;
+}
+
+.information {
+  position: absolute;
+  z-index: 3;
+  margin-left: 5rem;
+  top: 25%;
+  width: 25%;
+}
+/* #hide {
+  position: absolute;
+  z-index: 3;
+  width: 100%;
+  display: block;
+} */
+.title {
+  
+  
+  
+  color: white;
+  font-size: 2rem;
+  font-style: italic;
+  font-weight: bold;
+}
+.description {
+  margin-top: 2rem;
+  line-height: 1.5rem;
+  color: white;
+}
+button {
+  margin-top: 2rem;
+  border: none;
+  background: rgb(17, 159, 17);
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 2rem;
+  cursor: pointer;
+}
