@@ -6,6 +6,7 @@ import vertexShader from "./shaders/vertex.glsl";
 import fragmentShader from "./shaders/fragment.glsl";
 import atmosphereVertexShader from "./shaders/atmosphereVertex.glsl";
 import atmosphereFragmentShader from "./shaders/atmosphereFragment.glsl";
+import { DoubleSide } from "three";
 
 //textureloader
 const textureLoader = new THREE.TextureLoader();
@@ -48,6 +49,7 @@ renderer.render(scene, camera);
 const sphere = new THREE.Mesh(
 	new THREE.SphereBufferGeometry(5, 50, 50),
 	new THREE.ShaderMaterial({
+		side: DoubleSide,
 		vertexShader,
 		fragmentShader,
 		uniforms: {
@@ -57,6 +59,7 @@ const sphere = new THREE.Mesh(
 		},
 	})
 );
+sphere.rotation.y = -Math.PI * 0.5;
 scene.add(sphere);
 
 const atmosphere = new THREE.Mesh(
@@ -96,6 +99,41 @@ starGeometry.setAttribute(
 );
 const stars = new THREE.Points(starGeometry, starMaterial);
 scene.add(stars);
+function createPoint(lat, lng) {
+	const box = new THREE.Mesh(
+		new THREE.BoxBufferGeometry(0.1, 0.1, 1),
+		new THREE.MeshBasicMaterial({ color: "#3BF7FF" })
+	);
+
+	const latitude = (lat / 180) * Math.PI;
+	const longitude = (lng / 180) * Math.PI;
+	const radius = 5;
+	const x = radius * Math.cos(latitude) * Math.sin(longitude);
+	const y = radius * Math.sin(latitude);
+	const z = radius * Math.cos(latitude) * Math.cos(longitude);
+
+	box.position.set(x, y, z);
+	box.geometry.applyMatrix4(new THREE.Matrix4().makeTranslation(0, 0, -0.5));
+	box.lookAt(0, 0, 0);
+	group.add(box);
+	gsap.fromTo(
+		box.scale,
+		{ z: 0 },
+		{
+			z: 2,
+			duration: 2,
+			yoyo: true,
+			repeat: -1,
+			ease: "linear",
+			delay: Math.random(),
+		}
+	);
+}
+
+createPoint(20.5937, 78.9629); //INDIA
+createPoint(30.3753, 69.3451); //PAKISTAN
+createPoint(35.8617, 104.1954);
+createPoint(37.0902, -95.7129);
 
 // const ambientLight = new THREE.AmbientLight("#ffffff", 1);
 // scene.add(ambientLight);
@@ -104,6 +142,7 @@ window.addEventListener("mousemove", (e) => {
 	mouse.x = (e.clientX / innerWidth) * 2 - 1;
 	mouse.y = (e.clientY / innerHeight) * 2 - 1;
 });
+
 //Animate
 const clock = new THREE.Clock();
 
@@ -113,9 +152,9 @@ function animate() {
 	// console.log(elapsedTime);
 	//Update controls
 	// controls.update();
-	sphere.rotation.y += 0.002;
+	// sphere.rotation.y += 0.002;
 	// group.rotation.y = mouse.x * 0.6;
-	gsap.to(group.rotation, { y: mouse.x * 0.5, x: mouse.y * 0.5, duration: 2 });
+	gsap.to(group.rotation, { y: mouse.x * 1.5, x: mouse.y * 1.5, duration: 2 });
 
 	requestAnimationFrame(animate);
 	renderer.render(scene, camera);
