@@ -1,5 +1,6 @@
 import "./style.css";
 import gsap from "gsap";
+import data from "./data.json";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import vertexShader from "./shaders/vertex.glsl";
@@ -7,7 +8,7 @@ import fragmentShader from "./shaders/fragment.glsl";
 import atmosphereVertexShader from "./shaders/atmosphereVertex.glsl";
 import atmosphereFragmentShader from "./shaders/atmosphereFragment.glsl";
 import { DoubleSide } from "three";
-
+console.log(data);
 //textureloader
 const textureLoader = new THREE.TextureLoader();
 // Canvas
@@ -124,44 +125,84 @@ function createBox({ lat, lng, country, population }) {
 	box.geometry.applyMatrix4(new THREE.Matrix4().makeTranslation(0, 0, -0.5));
 	box.lookAt(0, 0, 0);
 	group.add(box);
-	// gsap.fromTo(
-	// 	box.scale,
-	// 	{ z: 0.4 },
-	// 	{
-	// 		z: 1.5,
-	// 		duration: 2,
-	// 		yoyo: true,
-	// 		repeat: -1,
-	// 		ease: "linear",
-	// 		delay: Math.random(),
-	// 	}
-	// );
+	gsap.fromTo(
+		box.scale,
+		{ z: 0.4 },
+		{
+			z: 1.5,
+			duration: 2,
+			yoyo: true,
+			repeat: -1,
+			ease: "linear",
+			delay: Math.random(),
+		}
+	);
 }
 
-createBox({
-	lat: 20.5937,
-	lng: 78.9629,
-	country: "INDIA",
-	population: "138 crores",
-}); //INDIA
-createBox({
-	lat: 30.3753,
-	lng: 69.3451,
-	country: "PAKISTAN",
-	population: "22.09 crores",
-}); //PAKISTAN
-createBox({
-	lat: 35.8617,
-	lng: 104.1954,
-	country: "CHINA",
-	population: "140.21 crores",
-});
-createBox({
-	lat: 37.0902,
-	lng: -95.7129,
-	country: "USA",
-	population: "32.95 crores",
-});
+// createBox({
+// 	lat: 20.5937,
+// 	lng: 78.9629,
+// 	country: "INDIA",
+// 	population: "138 crores",
+// }); //INDIA
+// createBox({
+// 	lat: 30.3753,
+// 	lng: 69.3451,
+// 	country: "PAKISTAN",
+// 	population: "22.09 crores",
+// }); //PAKISTAN
+// createBox({
+// 	lat: 35.8617,
+// 	lng: 104.1954,
+// 	country: "CHINA",
+// 	population: "140.21 crores",
+// });
+// createBox({
+// 	lat: 37.0902,
+// 	lng: -95.7129,
+// 	country: "USA",
+// 	population: "32.95 crores",
+// });
+
+function createBoxes({ countries }) {
+	countries.forEach((country) => {
+		const box = new THREE.Mesh(
+			new THREE.BoxBufferGeometry(0.2, 0.2, 1),
+			new THREE.MeshBasicMaterial({
+				color: "#3BF7FF",
+				opacity: 0.4,
+				transparent: true,
+			})
+		);
+
+		const latitude = (country.latlng[0] / 180) * Math.PI;
+		const longitude = (country.latlng[1] / 180) * Math.PI;
+		const radius = 5;
+		const x = radius * Math.cos(latitude) * Math.sin(longitude);
+		const y = radius * Math.sin(latitude);
+		const z = radius * Math.cos(latitude) * Math.cos(longitude);
+		box.country = country.name.common;
+		box.population = new Intl.NumberFormat().format(country.population);
+		box.position.set(x, y, z);
+		box.geometry.applyMatrix4(new THREE.Matrix4().makeTranslation(0, 0, -0.5));
+		box.lookAt(0, 0, 0);
+		group.add(box);
+		// gsap.fromTo(
+		// 	box.scale,
+		// 	{ z: 0.4 },
+		// 	{
+		// 		z: 1.5,
+		// 		duration: 2,
+		// 		yoyo: true,
+		// 		repeat: -1,
+		// 		ease: "linear",
+		// 		delay: Math.random(),
+		// 	}
+		// );
+	});
+}
+
+createBoxes({ countries: data });
 
 // const ambientLight = new THREE.AmbientLight("#ffffff", 1);
 // scene.add(ambientLight);
@@ -208,8 +249,8 @@ function animate() {
 	// console.log(elapsedTime);
 	//Update controls
 	// controls.update();
-	group.rotation.y += 0.0009;
-	// gsap.to(group.rotation, { y: mouse.x * 1.5, x: mouse.y * 1.5, duration: 2 });
+	group.rotation.y += 0.002;
+	// gsap.to(group.rotation, { y: mouse.x * 1.5, x: -mouse.y * 1.5, duration: 2 });
 
 	requestAnimationFrame(animate);
 	renderer.render(scene, camera);
