@@ -12,6 +12,9 @@ import { DoubleSide } from "three";
 const textureLoader = new THREE.TextureLoader();
 // Canvas
 const canvas = document.querySelector("canvas.webgl");
+const popupElement = document.querySelector("#popup");
+const populationTitle = document.querySelector("#population");
+const populationValue = document.querySelector("#populationValue");
 
 //Scene
 const scene = new THREE.Scene();
@@ -99,10 +102,14 @@ starGeometry.setAttribute(
 );
 const stars = new THREE.Points(starGeometry, starMaterial);
 scene.add(stars);
-function createPoint(lat, lng) {
+function createBox({ lat, lng, country, population }) {
 	const box = new THREE.Mesh(
-		new THREE.BoxBufferGeometry(0.1, 0.1, 1),
-		new THREE.MeshBasicMaterial({ color: "#3BF7FF" })
+		new THREE.BoxBufferGeometry(0.2, 0.2, 1),
+		new THREE.MeshBasicMaterial({
+			color: "#3BF7FF",
+			opacity: 0.4,
+			transparent: true,
+		})
 	);
 
 	const latitude = (lat / 180) * Math.PI;
@@ -111,50 +118,98 @@ function createPoint(lat, lng) {
 	const x = radius * Math.cos(latitude) * Math.sin(longitude);
 	const y = radius * Math.sin(latitude);
 	const z = radius * Math.cos(latitude) * Math.cos(longitude);
-
+	box.country = country;
+	box.population = population;
 	box.position.set(x, y, z);
 	box.geometry.applyMatrix4(new THREE.Matrix4().makeTranslation(0, 0, -0.5));
 	box.lookAt(0, 0, 0);
 	group.add(box);
-	gsap.fromTo(
-		box.scale,
-		{ z: 0 },
-		{
-			z: 2,
-			duration: 2,
-			yoyo: true,
-			repeat: -1,
-			ease: "linear",
-			delay: Math.random(),
-		}
-	);
+	// gsap.fromTo(
+	// 	box.scale,
+	// 	{ z: 0.4 },
+	// 	{
+	// 		z: 1.5,
+	// 		duration: 2,
+	// 		yoyo: true,
+	// 		repeat: -1,
+	// 		ease: "linear",
+	// 		delay: Math.random(),
+	// 	}
+	// );
 }
 
-createPoint(20.5937, 78.9629); //INDIA
-createPoint(30.3753, 69.3451); //PAKISTAN
-createPoint(35.8617, 104.1954);
-createPoint(37.0902, -95.7129);
+createBox({
+	lat: 20.5937,
+	lng: 78.9629,
+	country: "INDIA",
+	population: "138 crores",
+}); //INDIA
+createBox({
+	lat: 30.3753,
+	lng: 69.3451,
+	country: "PAKISTAN",
+	population: "22.09 crores",
+}); //PAKISTAN
+createBox({
+	lat: 35.8617,
+	lng: 104.1954,
+	country: "CHINA",
+	population: "140.21 crores",
+});
+createBox({
+	lat: 37.0902,
+	lng: -95.7129,
+	country: "USA",
+	population: "32.95 crores",
+});
 
 // const ambientLight = new THREE.AmbientLight("#ffffff", 1);
 // scene.add(ambientLight);
 const mouse = { x: 0, y: 0 };
 window.addEventListener("mousemove", (e) => {
 	mouse.x = (e.clientX / innerWidth) * 2 - 1;
-	mouse.y = (e.clientY / innerHeight) * 2 - 1;
+	mouse.y = -(e.clientY / innerHeight) * 2 + 1;
+
+	gsap.set(popupElement, { x: e.clientX, y: e.clientY });
 });
+
+//Raycaster
+const raycaster = new THREE.Raycaster();
 
 //Animate
 const clock = new THREE.Clock();
-
+const displaySetter = gsap.quickSetter(popupElement, "display");
 function animate() {
 	const elapsedTime = clock.getElapsedTime();
+	raycaster.setFromCamera(mouse, camera);
+	const intersects = raycaster.intersectObjects(
+		group.children.filter((mesh) => {
+			return mesh.geometry.type === "BoxGeometry";
+		})
+	);
+
+	group.children.forEach((mesh) => {
+		mesh.material.opacity = 0.4;
+	});
+
+	// popupElement.style.display = "none";
+	// gsap.set(popupElement, { display: "none" });
+	displaySetter("none");
+	for (const intersect of intersects) {
+		// gsap.set(popupElement, { display: "block" });
+
+		displaySetter("block");
+		populationTitle.innerHTML = intersect.object.country;
+		populationValue.innerHTML = intersect.object.population;
+		intersect.object.material.opacity = 1;
+		// console.log(intersect);
+	}
 
 	// console.log(elapsedTime);
 	//Update controls
 	// controls.update();
-	// sphere.rotation.y += 0.002;
-	// group.rotation.y = mouse.x * 0.6;
-	gsap.to(group.rotation, { y: mouse.x * 1.5, x: mouse.y * 1.5, duration: 2 });
+	group.rotation.y += 0.0009;
+	// gsap.to(group.rotation, { y: mouse.x * 1.5, x: mouse.y * 1.5, duration: 2 });
 
 	requestAnimationFrame(animate);
 	renderer.render(scene, camera);

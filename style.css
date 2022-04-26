@@ -9,6 +9,24 @@ body
     font-family: 'Exo 2', sans-serif;
 }
 
+#popup{
+  border-radius: 5px;
+  padding: 0.5rem 1rem;
+  background-color: black;
+  position: absolute;
+  z-index: 3;
+  opacity: 0.75;
+  color: white;
+  pointer-events: none;
+  cursor: none;
+}
+#popup h5{
+  font-weight: normal;
+}
+
+#popup p{
+  font-weight: bold;
+}
 .webgl
 {
     position: fixed;
