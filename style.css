@@ -36,28 +36,23 @@ body
 }
 
 .information {
+  
   position: absolute;
   z-index: 3;
   margin-left: 5rem;
   top: 25%;
   width: 25%;
 }
-/* #hide {
-  position: absolute;
-  z-index: 3;
-  width: 100%;
-  display: block;
-} */
+
 .title {
-  
-  
-  
+  user-select: none;
   color: white;
   font-size: 2rem;
   font-style: italic;
   font-weight: bold;
 }
 .description {
+  user-select:none;
   margin-top: 2rem;
   line-height: 1.5rem;
   color: white;
