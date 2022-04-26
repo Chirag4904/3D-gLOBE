@@ -30,9 +30,12 @@ const camera = new THREE.PerspectiveCamera(
 camera.position.setZ(15);
 
 // Controls
-// const controls = new OrbitControls(camera, canvas);
-// controls.enableDamping = true;
-
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true;
+controls.enablePan = false;
+controls.enableZoom = false;
+controls.rotateSpeed = 0.4;
+controls.dampingFactor = 0.05;
 //Window resize
 window.addEventListener("resize", () => {
 	// Update camera
@@ -93,7 +96,7 @@ const starVertices = [];
 for (let i = 0; i < 10000; i++) {
 	const x = (Math.random() - 0.5) * 2000;
 	const y = (Math.random() - 0.5) * 2000;
-	const z = -Math.random() * 2000;
+	const z = (Math.random() - 0.5) * 2000;
 	starVertices.push(x, y, z);
 }
 
@@ -103,71 +106,17 @@ starGeometry.setAttribute(
 );
 const stars = new THREE.Points(starGeometry, starMaterial);
 scene.add(stars);
-function createBox({ lat, lng, country, population }) {
-	const box = new THREE.Mesh(
-		new THREE.BoxBufferGeometry(0.2, 0.2, 1),
-		new THREE.MeshBasicMaterial({
-			color: "#3BF7FF",
-			opacity: 0.4,
-			transparent: true,
-		})
-	);
-
-	const latitude = (lat / 180) * Math.PI;
-	const longitude = (lng / 180) * Math.PI;
-	const radius = 5;
-	const x = radius * Math.cos(latitude) * Math.sin(longitude);
-	const y = radius * Math.sin(latitude);
-	const z = radius * Math.cos(latitude) * Math.cos(longitude);
-	box.country = country;
-	box.population = population;
-	box.position.set(x, y, z);
-	box.geometry.applyMatrix4(new THREE.Matrix4().makeTranslation(0, 0, -0.5));
-	box.lookAt(0, 0, 0);
-	group.add(box);
-	gsap.fromTo(
-		box.scale,
-		{ z: 0.4 },
-		{
-			z: 1.5,
-			duration: 2,
-			yoyo: true,
-			repeat: -1,
-			ease: "linear",
-			delay: Math.random(),
-		}
-	);
-}
-
-// createBox({
-// 	lat: 20.5937,
-// 	lng: 78.9629,
-// 	country: "INDIA",
-// 	population: "138 crores",
-// }); //INDIA
-// createBox({
-// 	lat: 30.3753,
-// 	lng: 69.3451,
-// 	country: "PAKISTAN",
-// 	population: "22.09 crores",
-// }); //PAKISTAN
-// createBox({
-// 	lat: 35.8617,
-// 	lng: 104.1954,
-// 	country: "CHINA",
-// 	population: "140.21 crores",
-// });
-// createBox({
-// 	lat: 37.0902,
-// 	lng: -95.7129,
-// 	country: "USA",
-// 	population: "32.95 crores",
-// });
 
 function createBoxes({ countries }) {
 	countries.forEach((country) => {
+		const scale = country.population / 1000000000;
+		const zScale = 1 * scale;
 		const box = new THREE.Mesh(
-			new THREE.BoxBufferGeometry(0.2, 0.2, 1),
+			new THREE.BoxBufferGeometry(
+				Math.max(0.1, 0.2 * scale),
+				Math.max(0.1, 0.2 * scale),
+				Math.max(zScale, Math.random() * 0.5 + 0.1)
+			),
 			new THREE.MeshBasicMaterial({
 				color: "#3BF7FF",
 				opacity: 0.4,
@@ -181,10 +130,13 @@ function createBoxes({ countries }) {
 		const x = radius * Math.cos(latitude) * Math.sin(longitude);
 		const y = radius * Math.sin(latitude);
 		const z = radius * Math.cos(latitude) * Math.cos(longitude);
+
 		box.country = country.name.common;
 		box.population = new Intl.NumberFormat().format(country.population);
 		box.position.set(x, y, z);
-		box.geometry.applyMatrix4(new THREE.Matrix4().makeTranslation(0, 0, -0.5));
+		box.geometry.applyMatrix4(
+			new THREE.Matrix4().makeTranslation(0, 0, -zScale / 2)
+		);
 		box.lookAt(0, 0, 0);
 		group.add(box);
 		// gsap.fromTo(
@@ -248,8 +200,8 @@ function animate() {
 
 	// console.log(elapsedTime);
 	//Update controls
-	// controls.update();
-	group.rotation.y += 0.002;
+	controls.update();
+	// group.rotation.y += 0.002;
 	// gsap.to(group.rotation, { y: mouse.x * 1.5, x: -mouse.y * 1.5, duration: 2 });
 
 	requestAnimationFrame(animate);
